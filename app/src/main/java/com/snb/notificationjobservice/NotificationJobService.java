@@ -11,38 +11,47 @@ import android.graphics.Color;
 import androidx.core.app.NotificationCompat;
 
 public class NotificationJobService extends JobService {
-    NotificationManager mNotifynManager;
-    //Notification channerl ID.
+    NotificationManager mNotifyManager;
+
+    // Notification channel ID.
     private static final String PRIMARY_CHANNEL_ID =
             "primary_notification_channel";
+    /**
+     * Creates a Notification channel, for OREO and higher.
+     */
+    public void createNotificationChannel() {
 
-//    Creates a Notification channel, for OREO and higher.
-    public void createNotificationChannel(){
-        //Define notification manager object
-        mNotifynManager=(NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        // Define notification manager object.
+        mNotifyManager =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
         // Notification channels are only available in OREO and higher.
-        // So, add a check on SDK Version
+        // So, add a check on SDK version.
         if (android.os.Build.VERSION.SDK_INT >=
                 android.os.Build.VERSION_CODES.O) {
-            //create the NotificationChannels with all the parameters.
+
+            // Create the NotificationChannel with all the parameters.
             NotificationChannel notificationChannel = new NotificationChannel
                     (PRIMARY_CHANNEL_ID,
-                    "Job Service notification",
-                    NotificationManager.IMPORTANCE_HIGH);
+                            "Job Service notification",
+                            NotificationManager.IMPORTANCE_HIGH);
 
-                    notificationChannel.enableLights(true);
-                    notificationChannel.setLightColor(Color.RED);
-                    notificationChannel.enableLights(true);
-                    notificationChannel.setDescription
-                            ("Notifications from Job Service");
-                    mNotifynManager.createNotificationChannel(notificationChannel);
+            notificationChannel.enableLights(true);
+            notificationChannel.setLightColor(Color.RED);
+            notificationChannel.enableVibration(true);
+            notificationChannel.setDescription
+                    ("Notifications from Job Service");
+
+            mNotifyManager.createNotificationChannel(notificationChannel);
         }
     }
 
     @Override
     public boolean onStartJob(JobParameters jobParameters) {
+
         //Create the notification channel
         createNotificationChannel();
+
         //Set up the notification content intent to launch the app when clicked
         PendingIntent contentPendingIntent = PendingIntent.getActivity
                 (this, 0, new Intent(this, MainActivity.class),
@@ -58,7 +67,12 @@ public class NotificationJobService extends JobService {
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setAutoCancel(true);
 
-        mNotifynManager.notify(0, builder.build());
+        mNotifyManager.notify(0, builder.build());
         return false;
+    }
+
+    @Override
+    public boolean onStopJob(JobParameters params){
+        return true;
     }
 }
